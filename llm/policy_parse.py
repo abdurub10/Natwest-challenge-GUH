@@ -16,10 +16,7 @@ SAMPLES = {
         "Separately, the government confirmed the Universal Credit standard allowance will increase by £15 a month."),
 }
 
-TOOL = {
-    "name": "extract_scenario",
-    "description": "Extract the household-finance shock described in the announcement.",
-    "input_schema": {
+SCHEMA = {
         "type": "object",
         "properties": {
             "summary": {"type": "string", "description": "One plain-English sentence describing the scenario."},
@@ -33,7 +30,7 @@ TOOL = {
         },
         "required": ["summary", "energy_pct", "private_rent_pct", "uc_standard_delta",
                      "hospitality_hours_cut", "retail_hours_cut", "logistics_hours_cut", "confidence"],
-    },
+        "additionalProperties": False,
 }
 
 
@@ -56,13 +53,16 @@ class Parsed(BaseModel):
 
 
 def parse(text: str) -> Parsed:
+    import json
+
     import anthropic
-    client = anthropic.Anthropic(timeout=20.0)
+    client = anthropic.Anthropic(timeout=30.0)
     resp = client.messages.create(
-        model=os.environ.get("CLAUDE_MODEL", "claude-sonnet-5-5"), max_tokens=400, temperature=0,
+        model=os.environ.get("CLAUDE_MODEL", "claude-sonnet-5-5"), max_tokens=4000,
         system="You convert UK policy or economic announcements into numeric household-finance scenarios. "
                "Only use values stated or directly implied by the text; use 0 for anything not mentioned.",
-        tools=[TOOL], tool_choice={"type": "tool", "name": "extract_scenario"},
+        output_config={"effort": "low", "format": {"type": "json_schema", "schema": SCHEMA}},
         messages=[{"role": "user", "content": text}])
-    block = next(b for b in resp.content if b.type == "tool_use")
-    return Parsed(**block.input)
+    if resp.stop_reason == "refusal":
+        raise ValueError("refused")
+    return Parsed(**json.loads(next(b.text for b in resp.content if b.type == "text")))

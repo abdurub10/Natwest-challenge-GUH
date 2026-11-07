@@ -28,10 +28,7 @@ Rules:
 - Choose suggested actions only from allowed_actions, copied exactly.
 - The forecast comes from simulated futures of bank customers' cash flow, reweighted to the whole area and protected with differential privacy."""
 
-TOOL = {
-    "name": "write_briefing",
-    "description": "Write the area briefing.",
-    "input_schema": {
+SCHEMA = {
         "type": "object",
         "properties": {
             "headline": {"type": "string", "description": "At most 20 words: what is forecast and when."},
@@ -41,7 +38,7 @@ TOOL = {
             "confidence_note": {"type": "string", "description": "One sentence on uncertainty."},
         },
         "required": ["headline", "whats_happening", "who_is_affected", "suggested_actions", "confidence_note"],
-    },
+        "additionalProperties": False,
 }
 
 
@@ -110,25 +107,27 @@ def write(facts: dict) -> Briefing:
         return template(facts)
     try:
         import anthropic
-        client = anthropic.Anthropic(timeout=15.0)
+        client = anthropic.Anthropic(timeout=30.0)
         public = {k: v for k, v in facts.items() if not k.startswith("_")}
-        messages = [{"role": "user", "content": "Here are the facts. Write the briefing.\n" + json.dumps(public, ensure_ascii=False)}]
+        messages = [{"role": "user", "content": "Here are the facts. Write the briefing as JSON.\n" + json.dumps(public, ensure_ascii=False)}]
         rejected: list[str] = []
         for _ in range(2):
             resp = client.messages.create(
-                model=os.environ.get("CLAUDE_MODEL", "claude-sonnet-5-5"), max_tokens=600, temperature=0.3,
-                system=SYSTEM, tools=[TOOL], tool_choice={"type": "tool", "name": "write_briefing"},
+                model=os.environ.get("CLAUDE_MODEL", "claude-sonnet-5-5"), max_tokens=4000, system=SYSTEM,
+                output_config={"effort": "low", "format": {"type": "json_schema", "schema": SCHEMA}},
                 messages=messages)
-            block = next(b for b in resp.content if b.type == "tool_use")
-            out = dict(block.input)
+            if resp.stop_reason == "refusal":
+                break
+            text = next(b.text for b in resp.content if b.type == "text")
+            out = json.loads(text)
             out["suggested_actions"] = [a for a in out.get("suggested_actions", []) if a in ALLOWED_ACTIONS] or ALLOWED_ACTIONS[:2]
             bad = check(_text(out), facts["_allowed"])
             if not bad:
                 return Briefing(**out, rejected=rejected)
             rejected += bad
-            messages += [{"role": "assistant", "content": resp.content},
-                         {"role": "user", "content": [{"type": "tool_result", "tool_use_id": block.id, "is_error": True,
-                                                       "content": f"You used numbers not in the facts: {', '.join(bad)}. Rewrite using only the given numbers."}]}]
+            messages += [{"role": "assistant", "content": text},
+                         {"role": "user", "content": f"You used numbers not in the facts: {', '.join(bad)}. "
+                                                     "Rewrite using only the given numbers, exactly as written."}]
         t = template(facts)
         t.rejected = rejected
         return t

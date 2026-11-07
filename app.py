@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import copy
+from pathlib import Path
 import json
 
 import numpy as np
@@ -11,7 +12,7 @@ import pydeck as pdk
 import streamlit as st
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(Path(__file__).resolve().parent / ".env")
 
 from engine import backtest  # noqa: E402
 from engine import config as C  # noqa: E402
