@@ -8,6 +8,7 @@ import { DayCard } from "@/components/DayCard";
 import { HeadroomFigure } from "@/components/HeadroomFigure";
 import { Scrubber } from "@/components/Scrubber";
 import { WarningCard } from "@/components/WarningCard";
+import { NearbyCard } from "@/components/NearbyCard";
 import { WeekStrip } from "@/components/WeekStrip";
 import { useAppState } from "@/components/AppState";
 import { ErrorState, Label, LoadingState, ScreenHeader, SectionTitle } from "@/components/ui";
@@ -68,7 +69,10 @@ export default function HomePage() {
           <DayCard forecast={data} index={i} />
 
           {warning ? (
-            <WarningCard warning={warning} />
+            <>
+              <WarningCard warning={warning} />
+              <NearbyCard />
+            </>
           ) : (
             <section className="mx-5 rounded-xl border border-line bg-card p-5" dir={dir}>
               <p className="flex items-center gap-2 text-[1.125rem] font-semibold text-comfortable">

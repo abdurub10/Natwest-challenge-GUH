@@ -1,0 +1,132 @@
+{
+  "source": "Undertow neighbourhood forecast (privacy-protected area totals, synthetic customers)",
+  "as_of": "2026-11-07",
+  "msoa_code": "E02001075",
+  "msoa_name": "Manchester 031",
+  "place": "Levenshulme",
+  "lad": "Manchester",
+  "horizons": [
+    {
+      "weeks": 2,
+      "suppressed": false,
+      "rate": 0.058,
+      "rate_p10": 0.048,
+      "rate_p90": 0.07,
+      "drivers": [
+        {
+          "id": "structural",
+          "share": 0.65
+        },
+        {
+          "id": "surprise_cost",
+          "share": 0.3
+        },
+        {
+          "id": "income_drop",
+          "share": 0.05
+        }
+      ]
+    },
+    {
+      "weeks": 4,
+      "suppressed": false,
+      "rate": 0.219,
+      "rate_p10": 0.203,
+      "rate_p90": 0.236,
+      "drivers": [
+        {
+          "id": "structural",
+          "share": 0.65
+        },
+        {
+          "id": "surprise_cost",
+          "share": 0.25
+        },
+        {
+          "id": "income_drop",
+          "share": 0.15
+        },
+        {
+          "id": "christmas",
+          "share": 0.05
+        }
+      ]
+    },
+    {
+      "weeks": 6,
+      "suppressed": false,
+      "rate": 0.245,
+      "rate_p10": 0.221,
+      "rate_p90": 0.269,
+      "drivers": [
+        {
+          "id": "structural",
+          "share": 0.55
+        },
+        {
+          "id": "surprise_cost",
+          "share": 0.3
+        },
+        {
+          "id": "income_drop",
+          "share": 0.2
+        },
+        {
+          "id": "christmas",
+          "share": 0.2
+        },
+        {
+          "id": "uc_timing",
+          "share": 0.05
+        }
+      ]
+    },
+    {
+      "weeks": 8,
+      "suppressed": false,
+      "rate": 0.31,
+      "rate_p10": 0.284,
+      "rate_p90": 0.341,
+      "drivers": [
+        {
+          "id": "structural",
+          "share": 0.5
+        },
+        {
+          "id": "surprise_cost",
+          "share": 0.35
+        },
+        {
+          "id": "income_drop",
+          "share": 0.25
+        },
+        {
+          "id": "christmas",
+          "share": 0.25
+        },
+        {
+          "id": "uc_timing",
+          "share": 0.05
+        }
+      ]
+    }
+  ],
+  "city": [
+    {
+      "weeks": 2,
+      "rate": 0.052
+    },
+    {
+      "weeks": 4,
+      "rate": 0.183
+    },
+    {
+      "weeks": 6,
+      "rate": 0.227
+    },
+    {
+      "weeks": 8,
+      "rate": 0.262
+    }
+  ]
+}

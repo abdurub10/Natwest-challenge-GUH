@@ -7,8 +7,10 @@ import { useEffect, useRef, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
+import { ArrowUpRight } from "lucide-react";
 import { useAppState } from "./AppState";
 import { BottomTabs, TABS } from "./BottomTabs";
+import { UNDERTOW_URL } from "./NearbyCard";
 
 function TopNav() {
   const pathname = usePathname() ?? "/app";
@@ -42,7 +44,16 @@ function TopNav() {
             })}
           </ul>
         </nav>
-        <span className="ml-auto inline-flex items-center gap-2 rounded-full border border-line px-3 py-1 font-mono text-[0.8125rem] text-muted">
+        <a
+          href={UNDERTOW_URL}
+          target="_blank"
+          rel="noreferrer"
+          className="ml-auto inline-flex min-h-11 items-center gap-1.5 px-3.5 text-[0.9375rem] font-medium text-muted transition-colors duration-200 ease-calm hover:text-ink"
+        >
+          {t("shell.areaView")}
+          <ArrowUpRight aria-hidden size={16} />
+        </a>
+        <span className="inline-flex items-center gap-2 rounded-full border border-line px-3 py-1 font-mono text-[0.8125rem] text-muted">
           <span aria-hidden className="size-1.5 rounded-full bg-muted" />
           {t("shell.example")}
         </span>
