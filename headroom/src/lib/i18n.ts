@@ -11,6 +11,7 @@ const en = {
   "tabs.ask": "Ask",
   "tabs.settings": "Settings",
   "tabs.label": "Main",
+  "shell.example": "Example data: Aisha Rahman",
 
   "home.greeting": "Hi Aisha",
   "home.title": "Your next 90 days",
@@ -160,6 +161,7 @@ const ur: Dict = {
   "tabs.ask": "پوچھیں",
   "tabs.settings": "ترتیبات",
   "tabs.label": "مین",
+  "shell.example": "مثالی ڈیٹا: عائشہ رحمان",
 
   "home.greeting": "السلام علیکم عائشہ",
   "home.title": "آپ کے اگلے 90 دن",
@@ -306,6 +308,7 @@ const pl: Dict = {
   "tabs.ask": "Zapytaj",
   "tabs.settings": "Ustawienia",
   "tabs.label": "Główne",
+  "shell.example": "Przykładowe dane: Aisha Rahman",
 
   "home.greeting": "Cześć, Aisha",
   "home.title": "Twoje następne 90 dni",

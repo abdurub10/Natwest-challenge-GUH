@@ -29,14 +29,14 @@ export function Switch({ checked, onChange, labelledBy, describedBy }: { checked
       <span
         aria-hidden
         className={clsx(
-          "relative h-[30px] w-[50px] rounded-full border-2 transition-colors duration-300 ease-calm",
-          checked ? "border-accent bg-accent" : "border-[#9AA19D] bg-[#ECE8E1]",
+          "relative h-[30px] w-[50px] rounded-full border-2 transition-colors duration-200 ease-calm",
+          checked ? "border-accent bg-accent" : "border-lineStrong bg-raised",
         )}
       >
         <span
           className={clsx(
-            "absolute top-[2px] size-[22px] rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.25)] transition-transform duration-300 ease-calm",
-            checked ? "translate-x-[22px]" : "translate-x-[2px]",
+            "absolute left-0 top-[2px] size-[22px] rounded-full transition-[translate,background-color] duration-200 ease-calm",
+            checked ? "translate-x-[22px] bg-accentInk" : "translate-x-[2px] bg-muted",
           )}
         />
       </span>
@@ -53,7 +53,7 @@ export function ActionCard({ action, checked, onToggle, byMonth }: { action: Act
   const stepsId = `${uid}-steps`;
 
   return (
-    <article className={clsx("rounded-[20px] border bg-card transition-[border-color,box-shadow] duration-300 ease-calm", checked ? "border-accent/50 shadow-[0_0_0_1px_rgba(15,110,92,0.35)]" : "border-line")} dir={dir}>
+    <article className={clsx("rounded-xl border bg-card transition-[border-color,box-shadow] duration-300 ease-calm", checked ? "border-accent/45 bg-raised" : "border-line")} dir={dir}>
       <div className="flex items-start gap-3 p-5 pb-3">
         <div className="min-w-0 flex-1">
           <h3 id={titleId} className="text-[1.125rem] font-semibold leading-snug text-ink">
@@ -87,7 +87,7 @@ export function ActionCard({ action, checked, onToggle, byMonth }: { action: Act
           aria-expanded={open}
           aria-controls={stepsId}
           onClick={() => setOpen((o) => !o)}
-          className="-mx-2 mt-1 inline-flex min-h-11 items-center gap-1 rounded-full px-2 text-[0.9375rem] font-semibold text-accent"
+          className="-mx-2 mt-1 inline-flex min-h-11 items-center gap-1 rounded-lg px-2 text-[0.9375rem] font-semibold text-ink hover:text-accent"
         >
           {open ? t("plan.hideSteps") : t("plan.steps")}
           <ChevronDown aria-hidden size={18} className={clsx("transition-transform duration-200 ease-calm", open && "rotate-180")} />
@@ -98,7 +98,7 @@ export function ActionCard({ action, checked, onToggle, byMonth }: { action: Act
           <ol className="space-y-2">
             {action.steps.map((s, i) => (
               <li key={i} className="flex gap-3 text-[1rem] leading-snug text-ink">
-                <span aria-hidden className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-accentSoft text-[0.8125rem] font-semibold text-[#0B5A4B]">
+                <span aria-hidden className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-accentSoft text-[0.8125rem] font-semibold text-accent">
                   {i + 1}
                 </span>
                 <span>{s}</span>
@@ -129,7 +129,7 @@ export const HELP_CONTACTS = [
 export function HelpCard({ summary, prominent = false }: { summary?: string; prominent?: boolean }) {
   const { t, dir } = useAppState();
   return (
-    <section aria-labelledby="help-title" className={clsx("rounded-[20px] border p-5", prominent ? "border-accent/40 bg-card" : "border-line bg-canvas")} dir={dir}>
+    <section aria-labelledby="help-title" className={clsx("rounded-xl border p-5", prominent ? "border-accent/40 bg-card" : "border-line bg-card")} dir={dir}>
       <h3 id="help-title" className="text-[1.125rem] font-semibold text-ink">
         {t("help.title")}
       </h3>

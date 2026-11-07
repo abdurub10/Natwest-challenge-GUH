@@ -9,15 +9,18 @@ import type { DotItemDotProps } from "recharts";
 import type { DayPoint, Warning } from "@/lib/forecast/types";
 import { formatMoney, formatShortDay } from "@/lib/format";
 
+// Dark editorial palette (ui-plan.md 3.1). Lime is punctuation: the selected day and the
+// "with your plan" line only. The plain forecast line is off-white.
 const COLORS = {
-  accent: "#0F6E5C",
-  band: "rgba(15,110,92,0.14)",
-  zero: "#8A8F8C",
-  ink: "#1B1F1D",
-  muted: "#5B625E",
-  short: "#B3261E",
-  card: "#FFFFFF",
-  compare: "#8A8F8C",
+  accent: "#D5F267",
+  band: "rgba(241,242,235,0.13)",
+  zero: "#747C69",
+  ink: "#F1F2EB",
+  muted: "#B2B8A7",
+  short: "#F1948A",
+  card: "#10110F",
+  compare: "#8A917F",
+  grid: "#34382E",
 };
 
 const noopSubscribe = () => () => {};
@@ -135,11 +138,17 @@ export function Chart90({ days, index, onIndexChange, warning, compareDays, comp
 
   const tickLabel = useCallback((i: number) => (i === 0 ? todayLabel : data[i] ? formatShortDay(data[i].date) : ""), [data, todayLabel]);
 
-  const renderDot = useCallback((props: DotItemDotProps) => {
-    const { cx, cy, payload, index: i } = props;
-    if (!payload?.big || cx == null || cy == null) return <g key={`d${i}`} />;
-    return <circle key={`d${i}`} cx={cx} cy={cy} r={4} fill={COLORS.accent} stroke={COLORS.card} strokeWidth={2} />;
-  }, []);
+  const showCompare = !!compareDays?.length;
+  const lineColor = showCompare ? COLORS.accent : COLORS.ink;
+
+  const renderDot = useCallback(
+    (props: DotItemDotProps) => {
+      const { cx, cy, payload, index: i } = props;
+      if (!payload?.big || cx == null || cy == null) return <g key={`d${i}`} />;
+      return <circle key={`d${i}`} cx={cx} cy={cy} r={3.5} fill={lineColor} stroke={COLORS.card} strokeWidth={2} />;
+    },
+    [lineColor],
+  );
 
   const warnRange = useMemo(() => {
     if (!warning) return null;
@@ -180,7 +189,6 @@ export function Chart90({ days, index, onIndexChange, warning, compareDays, comp
 
   const sel = index != null && data[index] ? data[index] : null;
   const animate = !reduced;
-  const showCompare = !!compareDays?.length;
 
   return (
     <figure className="m-0">
@@ -206,7 +214,7 @@ export function Chart90({ days, index, onIndexChange, warning, compareDays, comp
               tickFormatter={tickLabel}
               interval={0}
               tickLine={false}
-              axisLine={{ stroke: "#E6E1D8" }}
+              axisLine={{ stroke: COLORS.grid }}
               tick={{ fill: COLORS.muted, fontSize: 13 }}
               tickMargin={8}
               height={30}
@@ -222,7 +230,7 @@ export function Chart90({ days, index, onIndexChange, warning, compareDays, comp
               tick={{ fill: COLORS.muted, fontSize: 12 }}
               allowDataOverflow
             />
-            {warnRange ? <ReferenceArea x1={warnRange[0]} x2={warnRange[1]} fill={COLORS.short} fillOpacity={0.07} stroke="none" ifOverflow="hidden" /> : null}
+            {warnRange ? <ReferenceArea x1={warnRange[0]} x2={warnRange[1]} fill={COLORS.short} fillOpacity={0.1} stroke="none" ifOverflow="hidden" /> : null}
             <ReferenceLine y={0} stroke={COLORS.zero} strokeDasharray="4 4" strokeWidth={1} />
             <Area
               type="monotone"
@@ -251,7 +259,7 @@ export function Chart90({ days, index, onIndexChange, warning, compareDays, comp
             <Line
               type="monotone"
               dataKey="p50"
-              stroke={COLORS.accent}
+              stroke={lineColor}
               strokeWidth={2.25}
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -261,18 +269,18 @@ export function Chart90({ days, index, onIndexChange, warning, compareDays, comp
               animationDuration={duration}
               animationEasing="ease-out"
             />
-            {sel ? <ReferenceLine x={sel.i} stroke={COLORS.ink} strokeWidth={1} strokeOpacity={0.55} /> : null}
-            {sel ? <ReferenceDot x={sel.i} y={sel.p50} r={6} fill={COLORS.accent} stroke={COLORS.card} strokeWidth={2.5} ifOverflow="visible" /> : null}
+            {sel ? <ReferenceLine x={sel.i} stroke={COLORS.ink} strokeWidth={1} strokeOpacity={0.4} /> : null}
+            {sel ? <ReferenceDot x={sel.i} y={sel.p50} r={6.5} fill={COLORS.accent} stroke={COLORS.card} strokeWidth={3} ifOverflow="visible" /> : null}
           </ComposedChart>
         ) : (
-          <div aria-hidden className="absolute inset-x-[54px] bottom-[30px] top-[14px] rounded-xl bg-accentSoft/40" />
+          <div aria-hidden className="absolute inset-x-[54px] bottom-[30px] top-[14px] rounded-xl bg-raised" />
         )}
       </div>
       {showCompare && (mainLabel || compareLabel) ? (
         <figcaption className="mt-2 flex flex-wrap items-center gap-x-5 gap-y-1 px-1 text-[0.875rem] text-muted">
           <span className="inline-flex items-center gap-2">
             <svg aria-hidden width="22" height="8">
-              <line x1="1" y1="4" x2="21" y2="4" stroke={COLORS.accent} strokeWidth="2.5" strokeLinecap="round" />
+              <line x1="1" y1="4" x2="21" y2="4" stroke={lineColor} strokeWidth="2.5" strokeLinecap="round" />
             </svg>
             {mainLabel}
           </span>

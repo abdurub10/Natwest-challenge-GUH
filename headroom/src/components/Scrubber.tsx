@@ -13,7 +13,7 @@ export function Scrubber({ days, index, onChange, valueText, id = "scrubber" }: 
   const first = days[0]?.date;
   const last = days[max]?.date;
   return (
-    <div className="px-5">
+    <div className="px-5 lg:pl-[44px] lg:pr-[4px]">
       <label htmlFor={id} className="sr-only">
         {t("scrubber.label")}
       </label>
@@ -31,15 +31,15 @@ export function Scrubber({ days, index, onChange, valueText, id = "scrubber" }: 
           "block h-11 w-full cursor-pointer appearance-none bg-transparent touch-pan-y",
           // Track
           "[&::-webkit-slider-runnable-track]:h-1.5 [&::-webkit-slider-runnable-track]:rounded-full",
-          "[&::-webkit-slider-runnable-track]:bg-[linear-gradient(to_right,var(--color-accent)_var(--pct),var(--color-line)_var(--pct))]",
-          "[&::-moz-range-track]:h-1.5 [&::-moz-range-track]:rounded-full [&::-moz-range-track]:bg-line",
+          "[&::-webkit-slider-runnable-track]:bg-[linear-gradient(to_right,var(--color-accent)_var(--pct),var(--color-lineStrong)_var(--pct))]",
+          "[&::-moz-range-track]:h-1.5 [&::-moz-range-track]:rounded-full [&::-moz-range-track]:bg-lineStrong",
           "[&::-moz-range-progress]:h-1.5 [&::-moz-range-progress]:rounded-full [&::-moz-range-progress]:bg-accent",
           // Thumb: 44px target, drawn as a 28px disc with a white ring.
           "[&::-webkit-slider-thumb]:-mt-[19px] [&::-webkit-slider-thumb]:size-11 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full",
           "[&::-webkit-slider-thumb]:border-[8px] [&::-webkit-slider-thumb]:border-solid [&::-webkit-slider-thumb]:border-transparent [&::-webkit-slider-thumb]:bg-accent [&::-webkit-slider-thumb]:bg-clip-padding",
-          "[&::-webkit-slider-thumb]:shadow-[inset_0_0_0_3px_#fff]",
-          "[&::-moz-range-thumb]:size-7 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-[3px] [&::-moz-range-thumb]:border-solid [&::-moz-range-thumb]:border-white [&::-moz-range-thumb]:bg-accent [&::-moz-range-thumb]:shadow-[0_1px_4px_rgba(0,0,0,0.25)]",
-          "focus-visible:outline-none focus-visible:[&::-webkit-slider-thumb]:shadow-[inset_0_0_0_3px_#fff,0_0_0_3px_var(--color-accent)]",
+          "[&::-webkit-slider-thumb]:shadow-[inset_0_0_0_3px_var(--color-canvas)]",
+          "[&::-moz-range-thumb]:size-7 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-[3px] [&::-moz-range-thumb]:border-solid [&::-moz-range-thumb]:border-canvas [&::-moz-range-thumb]:bg-accent [&::-moz-range-thumb]:shadow-[0_1px_4px_rgba(0,0,0,0.25)]",
+          "focus-visible:outline-none focus-visible:[&::-webkit-slider-thumb]:shadow-[inset_0_0_0_3px_var(--color-canvas),0_0_0_2px_var(--color-accent)]",
           "focus-visible:[&::-moz-range-thumb]:outline focus-visible:[&::-moz-range-thumb]:outline-[3px] focus-visible:[&::-moz-range-thumb]:outline-accent",
         )}
       />

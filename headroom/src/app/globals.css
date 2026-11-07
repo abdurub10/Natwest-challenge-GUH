@@ -1,25 +1,30 @@
 @import "tailwindcss";
 
-/* Design tokens (plan section 19). Use as bg-canvas, text-ink, border-line, bg-accent, text-short, etc. */
+/* Design tokens: dark editorial theme (ui-plan.md section 3). Same token names as the original
+   light theme so components keep using bg-canvas, text-ink, border-line, bg-accent, text-short, etc. */
 @theme {
-  --color-canvas: #FBF8F3;
-  --color-card: #FFFFFF;
-  --color-ink: #1B1F1D;
-  --color-muted: #5B625E;
-  --color-line: #E6E1D8;
-  --color-accent: #0F6E5C;
-  --color-accentSoft: #DCEFE9;
-  --color-comfortable: #2E7D4F;
-  --color-tight: #9A6700;
-  --color-short: #B3261E;
-  --color-band: rgba(15, 110, 92, 0.14);
-  --color-zero: #8A8F8C;
-  --font-serif: var(--font-source-serif), Georgia, serif;
-  --font-sans: var(--font-inter), system-ui, sans-serif;
+  --color-canvas: #10110F;
+  --color-card: #191B17;
+  --color-raised: #22251E;
+  --color-ink: #F1F2EB;
+  --color-muted: #B2B8A7;
+  --color-line: #34382E;
+  --color-lineStrong: #747C69;
+  --color-accent: #D5F267;
+  --color-accentInk: #171C0B;
+  --color-accentSoft: rgba(213, 242, 103, 0.14);
+  --color-comfortable: #9DD6AC;
+  --color-tight: #F0C078;
+  --color-short: #F1948A;
+  --color-band: rgba(241, 242, 235, 0.10);
+  --color-zero: #747C69;
+  --font-serif: var(--font-display), "Segoe UI", system-ui, sans-serif;
+  --font-sans: var(--font-display), "Segoe UI", system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, "Cascadia Mono", Consolas, monospace;
   --ease-calm: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-html { font-size: 100%; }
+html { font-size: 100%; color-scheme: dark; }
 html[data-text-size="large"] { font-size: 112.5%; }
 
 body {
@@ -31,8 +36,18 @@ body {
 
 .money { font-variant-numeric: tabular-nums; }
 
-:focus-visible { outline: 3px solid var(--color-accent); outline-offset: 2px; }
+:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+
+::selection { background: var(--color-accent); color: var(--color-accentInk); }
+
+/* Entry and value-change motion (ui-plan.md section 6). Removed under reduced motion below. */
+@keyframes hr-rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@keyframes hr-swap { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.hr-enter { animation: hr-rise 360ms var(--ease-calm) both; }
+.hr-enter-2 { animation: hr-rise 360ms var(--ease-calm) 50ms both; }
+.hr-enter-3 { animation: hr-rise 360ms var(--ease-calm) 100ms both; }
+.hr-swap { animation: hr-swap 220ms var(--ease-calm) both; }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-delay: 0ms !important; transition-duration: 0.01ms !important; }
 }

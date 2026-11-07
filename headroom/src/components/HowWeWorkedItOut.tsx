@@ -21,7 +21,7 @@ export function HowWeWorkedItOut({ forecast, warning }: { forecast: Forecast; wa
       <p className="mt-1.5 text-[1rem] leading-snug text-muted">{t("how.intro")}</p>
 
       {causes.length ? (
-        <div className="mt-4 overflow-hidden rounded-[20px] border border-line bg-card">
+        <div className="mt-4 overflow-hidden rounded-xl border border-line bg-card">
           {causes.map((c, k) => {
             const series = seriesForCause(c, forecast.recurring);
             const counts = countsPhrase(series, language);

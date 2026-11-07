@@ -15,7 +15,7 @@ function RadioRow<T extends string>({ name, legend, options, value, onChange }: 
   return (
     <fieldset className="mx-5" dir={dir}>
       <legend className="mb-2 text-[1.0625rem] font-semibold text-ink">{legend}</legend>
-      <div className="overflow-hidden rounded-[20px] border border-line bg-card">
+      <div className="overflow-hidden rounded-xl border border-line bg-card">
         {options.map((o, k) => {
           const id = `${name}-${o.id}`;
           const checked = value === o.id;
@@ -32,7 +32,7 @@ function RadioRow<T extends string>({ name, legend, options, value, onChange }: 
               <input id={id} type="radio" name={name} value={o.id} checked={checked} onChange={() => onChange(o.id)} className="peer sr-only" />
               <span
                 aria-hidden
-                className={clsx("flex size-6 shrink-0 items-center justify-center rounded-full border-2", checked ? "border-accent bg-accent text-white" : "border-[#9AA19D] bg-card")}
+                className={clsx("flex size-6 shrink-0 items-center justify-center rounded-full border-2", checked ? "border-accent bg-accent text-accentInk" : "border-lineStrong bg-card")}
               >
                 {checked ? <Check size={14} strokeWidth={3} /> : null}
               </span>
@@ -81,7 +81,7 @@ export default function SettingsPage() {
   ];
 
   return (
-    <>
+    <div className="lg:max-w-[760px]">
       <ScreenHeader title={t("settings.title")} />
       <div className="space-y-7 pt-3">
         <RadioRow<Language>
@@ -106,7 +106,7 @@ export default function SettingsPage() {
           <h2 id="uses-title" className="mb-2 text-[1.0625rem] font-semibold text-ink">
             {t("settings.uses")}
           </h2>
-          <ul className="divide-y divide-line rounded-[20px] border border-line bg-card">
+          <ul className="divide-y divide-line rounded-xl border border-line bg-card">
             {uses.map(({ icon: Icon, text }) => (
               <li key={text} className="flex gap-3 px-5 py-3.5">
                 <Icon aria-hidden size={20} className="mt-0.5 shrink-0 text-accent" />
@@ -128,11 +128,11 @@ export default function SettingsPage() {
             {t("settings.delete")}
           </h2>
           {state === "done" ? (
-            <p role="status" className="rounded-[20px] border border-line bg-card p-5 text-[1rem] text-ink">
+            <p role="status" className="rounded-xl border border-line bg-card p-5 text-[1rem] text-ink">
               {t("settings.deleted")}
             </p>
           ) : confirming ? (
-            <div className="rounded-[20px] border border-short/30 bg-card p-5">
+            <div className="rounded-xl border border-short/30 bg-card p-5">
               <p className="text-[1rem] leading-snug text-ink">{t("settings.deleteBody")}</p>
               {state === "error" ? (
                 <p role="alert" className="mt-2 text-[0.9375rem] text-short">
@@ -147,7 +147,7 @@ export default function SettingsPage() {
                   type="button"
                   onClick={onDelete}
                   disabled={state === "busy"}
-                  className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full bg-short px-5 text-[1.0625rem] font-semibold text-white disabled:opacity-60"
+                  className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full bg-short px-5 text-[1.0625rem] font-semibold text-canvas disabled:opacity-60"
                 >
                   {t("settings.deleteConfirm")}
                 </button>
@@ -160,7 +160,7 @@ export default function SettingsPage() {
                 setConfirming(true);
                 setState("idle");
               }}
-              className="flex min-h-14 w-full items-center gap-3 rounded-[20px] border border-line bg-card px-5 text-left text-[1.0625rem] font-semibold text-short"
+              className="flex min-h-14 w-full items-center gap-3 rounded-xl border border-line bg-card px-5 text-left text-[1.0625rem] font-semibold text-short"
             >
               <Trash2 aria-hidden size={20} />
               {t("settings.delete")}
@@ -168,6 +168,6 @@ export default function SettingsPage() {
           )}
         </section>
       </div>
-    </>
+    </div>
   );
 }

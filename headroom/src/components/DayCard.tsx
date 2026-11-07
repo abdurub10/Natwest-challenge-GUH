@@ -21,7 +21,7 @@ export function DayCard({ forecast, index }: { forecast: Forecast; index: number
   const wide = Math.abs(day.p80 - day.p20) > 40;
 
   return (
-    <section aria-labelledby="day-card-title" className="mx-5 rounded-[20px] border border-line bg-card p-5" dir={dir}>
+    <section aria-labelledby="day-card-title" className="mx-5 rounded-xl border border-line bg-card p-5" dir={dir}>
       <div className="flex items-start justify-between gap-3">
         <h3 id="day-card-title" className="text-[1.25rem] font-semibold text-ink">
           <Day iso={day.date}>{formatDay(day.date)}</Day>

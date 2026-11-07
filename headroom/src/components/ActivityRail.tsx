@@ -84,7 +84,7 @@ export function ActivityRail({ variant = "app", since, pollMs = 3000, emptyText 
   const behind = variant === "behind";
 
   return (
-    <section aria-label={title ?? "Activity"} className={behind ? "" : "rounded-[20px] border border-line bg-card p-5"}>
+    <section aria-label={title ?? "Activity"} className={behind ? "" : "rounded-xl border border-line bg-card p-5"}>
       {title ? <h2 className={clsx("font-semibold", behind ? "mb-4 text-[1.375rem] text-[#E8ECE9]" : "mb-2 text-[1.0625rem] text-ink")}>{title}</h2> : null}
       {items === null && !failed ? (
         <div aria-hidden className="space-y-2">

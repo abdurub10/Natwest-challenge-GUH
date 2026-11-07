@@ -8,11 +8,13 @@ import { useAppState } from "@/components/AppState";
 import { ActivityRail } from "@/components/ActivityRail";
 import { Day, LoadingState, Money, ScreenHeader, Tpl, buttonClass } from "@/components/ui";
 import { useForecast } from "@/lib/client/useForecast";
+import { useIsDesktop } from "@/lib/client/useMedia";
 import { formatDay } from "@/lib/format";
 
 export default function DonePage() {
   const { t, language, dir, lastPlan, ready } = useAppState();
   const { data } = useForecast(language);
+  const desktop = useIsDesktop();
 
   if (!ready) return <LoadingState chart={false} rows={2} />;
 
@@ -20,7 +22,7 @@ export default function DonePage() {
     return (
       <>
         <ScreenHeader title={t("plan.title")} />
-        <div className="mx-5 mt-3 rounded-[20px] border border-line bg-card p-5" dir={dir}>
+        <div className="mx-5 mt-3 rounded-xl border border-line bg-card p-5" dir={dir}>
           <p className="text-[1.0625rem] text-ink">{t("done.empty")}</p>
           <Link href="/app/plan" className={clsx(buttonClass.primary, "mt-4 w-full")}>
             {t("done.emptyLink")}
@@ -36,8 +38,9 @@ export default function DonePage() {
   const since = new Date(new Date(plan.createdAt).getTime() - 5000).toISOString();
 
   return (
-    <>
-      <div className="px-5 pt-8" dir={dir}>
+    <div className="lg:grid lg:grid-cols-12 lg:items-start">
+      <div className="lg:col-span-7">
+      <div className="hr-enter px-5 pt-8 lg:pt-10" dir={dir}>
         <CheckCircle2 aria-hidden size={40} className="text-comfortable" strokeWidth={1.75} />
       </div>
       <ScreenHeader
@@ -51,14 +54,14 @@ export default function DonePage() {
       />
 
       <div className="space-y-5 pt-3">
-        <section aria-labelledby="scheduled-title" className="mx-5 rounded-[20px] border border-line bg-card p-5" dir={dir}>
+        <section aria-labelledby="scheduled-title" className="mx-5 rounded-xl border border-line bg-card p-5" dir={dir}>
           <h2 id="scheduled-title" className="text-[1.0625rem] font-semibold text-ink">
             {t("done.scheduled")}
           </h2>
           <ul className="mt-2 divide-y divide-line">
             {actions.map((a) => (
               <li key={a.id} className="flex gap-3 py-3">
-                <CalendarCheck2 aria-hidden size={20} className="mt-0.5 shrink-0 text-accent" />
+                <CalendarCheck2 aria-hidden size={20} className="mt-0.5 shrink-0 text-comfortable" />
                 <div>
                   <p className="text-[1.0625rem] leading-snug text-ink">{a.title}</p>
                   {a.date ? (
@@ -70,29 +73,39 @@ export default function DonePage() {
               </li>
             ))}
             <li className="flex gap-3 py-3">
-              <BellRing aria-hidden size={20} className="mt-0.5 shrink-0 text-accent" />
+              <BellRing aria-hidden size={20} className="mt-0.5 shrink-0 text-comfortable" />
               <p className="text-[1.0625rem] leading-snug text-ink">{t("done.everyFriday")}</p>
             </li>
             <li className="flex gap-3 py-3">
-              <MessageSquareText aria-hidden size={20} className="mt-0.5 shrink-0 text-accent" />
+              <MessageSquareText aria-hidden size={20} className="mt-0.5 shrink-0 text-comfortable" />
               <p className="text-[1.0625rem] leading-snug text-ink">{t("done.sent")}</p>
             </li>
           </ul>
         </section>
 
-        <div className="mx-5">
-          <ActivityRail title={t("done.activity")} since={since} emptyText={t("activity.empty")} />
-        </div>
+        {!desktop ? (
+          <div className="mx-5">
+            <ActivityRail title={t("done.activity")} since={since} emptyText={t("activity.empty")} />
+          </div>
+        ) : null}
 
-        <div className="mx-5 flex flex-col gap-2.5">
-          <Link href="/app" className={clsx(buttonClass.primary, "w-full")}>
+        <div className="mx-5 flex flex-col gap-2.5 lg:flex-row">
+          <Link href="/app" className={clsx(buttonClass.primary, "w-full lg:w-auto")}>
             {t("done.back")}
           </Link>
-          <Link href="/app/ask" className={clsx(buttonClass.secondary, "w-full")}>
+          <Link href="/app/ask" className={clsx(buttonClass.secondary, "w-full lg:w-auto")}>
             {t("done.ask")}
           </Link>
         </div>
       </div>
-    </>
+      </div>
+
+      {/* Desktop: the live activity rail beside the confirmation (the WhatsApp phone sits next to the laptop). */}
+      {desktop ? (
+        <aside className="lg:sticky lg:top-[88px] lg:col-span-5 lg:px-5 lg:pt-10">
+          <ActivityRail title={t("done.activity")} since={since} emptyText={t("activity.empty")} />
+        </aside>
+      ) : null}
+    </div>
   );
 }

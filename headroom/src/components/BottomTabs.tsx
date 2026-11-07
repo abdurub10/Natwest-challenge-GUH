@@ -7,7 +7,7 @@ import { Home, ListChecks, MessageCircle, Settings, type LucideIcon } from "luci
 import type { I18nKey } from "@/lib/i18n";
 import { useAppState } from "./AppState";
 
-const TABS: { href: string; key: I18nKey; icon: LucideIcon; match: (p: string) => boolean }[] = [
+export const TABS: { href: string; key: I18nKey; icon: LucideIcon; match: (p: string) => boolean }[] = [
   { href: "/app", key: "tabs.home", icon: Home, match: (p) => p === "/app" || p === "/app/" || p.startsWith("/app/why") },
   { href: "/app/plan", key: "tabs.plan", icon: ListChecks, match: (p) => p.startsWith("/app/plan") || p.startsWith("/app/done") },
   { href: "/app/ask", key: "tabs.ask", icon: MessageCircle, match: (p) => p.startsWith("/app/ask") },

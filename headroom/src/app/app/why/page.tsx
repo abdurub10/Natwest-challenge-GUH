@@ -90,17 +90,18 @@ export default function WhyPage() {
     <>
       {back}
       <ScreenHeader title={t("why.title")} />
-      <div className="space-y-7 pb-2 pt-3">
+      <div className="space-y-7 pb-2 pt-3 lg:grid lg:grid-cols-12 lg:items-start lg:space-y-0">
+        <div className="hr-enter-2 lg:col-span-7">
         {warning && ex ? (
-          <article className="mx-5 rounded-[20px] border border-line bg-card p-5" dir={dir} aria-labelledby="ex-headline">
-            <h2 id="ex-headline" className="font-serif text-[1.375rem] font-semibold leading-snug text-ink">
+          <article className="mx-5 rounded-xl border border-line bg-card p-5" dir={dir} aria-labelledby="ex-headline">
+            <h2 id="ex-headline" className="font-serif text-[1.375rem] font-semibold leading-snug tracking-[-0.015em] text-ink lg:text-[1.75rem] lg:leading-tight">
               {ex.headline}
             </h2>
             {ex.why.length ? (
               <ul className="mt-4 space-y-2.5">
                 {ex.why.map((w, k) => (
                   <li key={k} className="flex gap-3 text-[1.0625rem] leading-snug text-ink">
-                    <span aria-hidden className="mt-[0.55em] size-2 shrink-0 rounded-full bg-accent" />
+                    <span aria-hidden className="mt-[0.55em] size-2 shrink-0 rounded-full bg-muted" />
                     <span>{w}</span>
                   </li>
                 ))}
@@ -110,7 +111,7 @@ export default function WhyPage() {
             {ex.reassurance ? <p className="mt-3 text-[1.0625rem] leading-relaxed text-muted">{ex.reassurance}</p> : null}
             {ex.nextStep ? (
               <div className="mt-5 rounded-2xl bg-accentSoft p-4">
-                <p className="text-[0.875rem] font-semibold uppercase tracking-[0.06em] text-[#0B5A4B]">{t("why.bestNext")}</p>
+                <p className="text-[0.875rem] font-semibold uppercase tracking-[0.06em] text-accent">{t("why.bestNext")}</p>
                 <p className="mt-1 text-[1.0625rem] leading-snug text-ink">{ex.nextStep}</p>
                 <Link href="/app/plan" className={clsx(buttonClass.primary, "mt-3 w-full")}>
                   {t("warning.plan")}
@@ -120,15 +121,18 @@ export default function WhyPage() {
             ) : null}
           </article>
         ) : warning ? (
-          <div className="mx-5 rounded-[20px] border border-line bg-card p-5" dir={dir}>
+          <div className="mx-5 rounded-xl border border-line bg-card p-5" dir={dir}>
             <p className="text-[1.0625rem] text-ink">{t("loading")}</p>
           </div>
         ) : (
-          <div className="mx-5 rounded-[20px] border border-line bg-card p-5" dir={dir}>
+          <div className="mx-5 rounded-xl border border-line bg-card p-5" dir={dir}>
             <p className="text-[1.0625rem] leading-snug text-ink">{t("why.nothing")}</p>
           </div>
         )}
 
+        </div>
+
+        <div className="hr-enter-3 space-y-7 lg:col-span-5">
         <HowWeWorkedItOut forecast={data} warning={warning} />
 
         {past.length ? (
@@ -138,7 +142,7 @@ export default function WhyPage() {
               {t("why.happenedBefore")}
             </h2>
             <p className="mt-1.5 text-[1rem] text-muted">{t("why.happenedBeforeIntro")}</p>
-            <ul className="mt-3 divide-y divide-line rounded-[20px] border border-line bg-card">
+            <ul className="mt-3 divide-y divide-line rounded-xl border border-line bg-card">
               {past.map((m) => (
                 <li key={m.month} className="px-5 py-3.5">
                   <p className="text-[1.0625rem] font-semibold text-ink">{monthLabel(m.month)}</p>
@@ -151,6 +155,7 @@ export default function WhyPage() {
             </ul>
           </section>
         ) : null}
+        </div>
       </div>
     </>
   );

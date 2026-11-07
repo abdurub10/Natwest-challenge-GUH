@@ -8,6 +8,7 @@ import { ArrowUp, BadgeCheck, RotateCcw } from "lucide-react";
 import { coach, isAbortError, type ChatMessage } from "@/lib/client/api";
 import { ASK_CHIP_KEYS } from "@/lib/i18n";
 import { useAppState } from "./AppState";
+import { Label } from "./ui";
 
 interface Msg extends ChatMessage {
   id: number;
@@ -77,10 +78,11 @@ export function CoachChat() {
   const empty = messages.length === 0;
 
   return (
-    <div className="flex flex-col">
+    <div className="lg:grid lg:grid-cols-12 lg:items-start">
+    <div className="flex flex-col lg:col-span-8">
       <div className="px-5">
         {empty ? (
-          <section aria-labelledby="chips-title" className="mt-2" dir={dir}>
+          <section aria-labelledby="chips-title" className="mt-2 lg:hidden" dir={dir}>
             <h2 id="chips-title" className="text-[0.9375rem] font-semibold text-muted">
               {t("ask.chipsLabel")}
             </h2>
@@ -90,7 +92,7 @@ export function CoachChat() {
                   <button
                     type="button"
                     onClick={() => void send(c)}
-                    className="flex min-h-12 w-full items-center rounded-2xl border border-line bg-card px-4 py-2.5 text-left text-[1rem] leading-snug text-ink transition-colors duration-200 ease-calm hover:border-accent/40 hover:bg-accentSoft/50"
+                    className="flex min-h-12 w-full items-center rounded-2xl border border-line bg-card px-4 py-2.5 text-left text-[1rem] leading-snug text-ink transition-colors duration-200 ease-calm hover:border-lineStrong hover:bg-raised"
                   >
                     {c}
                   </button>
@@ -105,8 +107,8 @@ export function CoachChat() {
                 <div
                   dir={dir}
                   className={clsx(
-                    "max-w-[86%] rounded-[20px] px-4 py-3 text-[1.0625rem] leading-relaxed",
-                    m.role === "user" ? "rounded-br-md bg-accent text-white" : "rounded-bl-md border border-line bg-card text-ink",
+                    "max-w-[86%] rounded-xl px-4 py-3 text-[1.0625rem] leading-relaxed",
+                    m.role === "user" ? "rounded-br-md border border-lineStrong bg-raised text-ink" : "rounded-bl-md border border-line bg-card text-ink",
                   )}
                 >
                   <span className="sr-only">{m.role === "user" ? t("ask.you") : t("ask.coach")}: </span>
@@ -135,7 +137,7 @@ export function CoachChat() {
             ))}
             {pending ? (
               <li className="flex justify-start" role="status">
-                <div className="inline-flex items-center gap-2.5 rounded-[20px] rounded-bl-md border border-line bg-card px-4 py-3 text-[1rem] text-muted" dir={dir}>
+                <div className="inline-flex items-center gap-2.5 rounded-xl rounded-bl-md border border-line bg-card px-4 py-3 text-[1rem] text-muted" dir={dir}>
                   <span aria-hidden className="flex gap-1">
                     <span className="size-1.5 animate-pulse rounded-full bg-accent" />
                     <span className="size-1.5 animate-pulse rounded-full bg-accent [animation-delay:150ms]" />
@@ -158,11 +160,11 @@ export function CoachChat() {
         <div ref={endRef} />
       </div>
 
-      <form onSubmit={onSubmit} className="sticky bottom-0 z-10 mt-4 border-t border-line bg-canvas/95 px-4 py-3 backdrop-blur">
+      <form onSubmit={onSubmit} className="sticky bottom-0 z-10 mt-4 border-t border-line bg-canvas px-4 py-3 lg:mt-2 lg:border-t-0 lg:px-5">
         <label htmlFor="ask-input" className="sr-only">
           {t("ask.placeholder")}
         </label>
-        <div className="flex items-end gap-2 rounded-[24px] border border-line bg-card p-1.5 pl-4 focus-within:border-accent focus-within:shadow-[0_0_0_2px_rgba(15,110,92,0.2)]">
+        <div className="flex items-end gap-2 rounded-xl border border-lineStrong bg-card p-1.5 pl-4 focus-within:border-accent focus-within:shadow-[0_0_0_2px_rgba(213,242,103,0.25)]">
           <textarea
             id="ask-input"
             ref={inputRef}
@@ -183,12 +185,34 @@ export function CoachChat() {
             type="submit"
             disabled={!draft.trim() || pending}
             aria-label={t("ask.send")}
-            className="flex size-11 shrink-0 items-center justify-center rounded-full bg-accent text-white transition-colors duration-200 ease-calm disabled:bg-line disabled:text-muted"
+            className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-accent text-accentInk transition-colors duration-150 ease-calm hover:bg-[#C6E655] disabled:bg-raised disabled:text-muted"
           >
             <ArrowUp aria-hidden size={20} />
           </button>
         </div>
       </form>
+    </div>
+
+    {/* Desktop: suggestions stay visible beside the conversation so a judge never has to think of a question. */}
+    <aside aria-labelledby="chips-rail-title" className="hidden lg:sticky lg:top-[88px] lg:col-span-4 lg:block lg:px-5" dir={dir}>
+      <Label as="h2" id="chips-rail-title" n={1}>
+        {t("ask.chipsLabel")}
+      </Label>
+      <ul className="mt-3 flex flex-col gap-2">
+        {chips.map((c) => (
+          <li key={c}>
+            <button
+              type="button"
+              disabled={pending}
+              onClick={() => void send(c)}
+              className="flex min-h-12 w-full items-center rounded-lg border border-line bg-card px-4 py-2.5 text-left text-[1rem] leading-snug text-ink transition-colors duration-150 ease-calm hover:border-lineStrong hover:bg-raised disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {c}
+            </button>
+          </li>
+        ))}
+      </ul>
+    </aside>
     </div>
   );
 }

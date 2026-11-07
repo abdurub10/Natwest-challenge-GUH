@@ -13,13 +13,13 @@ export function WarningCard({ warning }: { warning: Warning }) {
   const { t, dir } = useAppState();
   const biggest = warning.causes[0];
   return (
-    <section aria-labelledby="warning-title" className="mx-5 overflow-hidden rounded-[20px] border border-short/25 bg-card" dir={dir}>
+    <section aria-labelledby="warning-title" className="mx-5 overflow-hidden rounded-xl border border-short/25 bg-card" dir={dir}>
       <div className="flex items-center gap-2 bg-short/[0.07] px-5 py-2.5 text-short">
         <CloudRain aria-hidden size={18} />
         <span className="text-[0.9375rem] font-semibold">{t("status.short")}</span>
       </div>
       <div className="p-5">
-        <h2 id="warning-title" className="font-serif text-[1.375rem] font-semibold leading-snug text-ink">
+        <h2 id="warning-title" className="font-serif text-[1.375rem] font-semibold leading-snug tracking-[-0.015em] text-ink">
           <Tpl
             text={t("warning.text")}
             vars={{
@@ -35,12 +35,12 @@ export function WarningCard({ warning }: { warning: Warning }) {
           </p>
         ) : null}
         <div className="mt-5 flex flex-wrap gap-2.5">
-          <Link href="/app/why" className={clsx(buttonClass.secondary, "flex-1 basis-[30%]")}>
+          <Link href="/app/why" className={clsx(buttonClass.secondary, "flex-1 basis-[30%] lg:flex-none lg:basis-auto")}>
             {t("warning.why")}
           </Link>
-          <Link href="/app/plan" className={clsx(buttonClass.primary, "flex-[2] basis-[60%]")}>
+          <Link href="/app/plan" className={clsx(buttonClass.primary, "flex-[2] basis-[60%] whitespace-nowrap lg:flex-1 lg:basis-auto lg:px-4")}>
             {t("warning.plan")}
-            <ArrowRight aria-hidden size={18} className={dir === "rtl" ? "rotate-180" : undefined} />
+            <ArrowRight aria-hidden size={18} className={dir === "rtl" ? "rotate-180" : "transition-transform duration-150 ease-calm group-hover/btn:translate-x-[3px]"} />
           </Link>
         </div>
       </div>

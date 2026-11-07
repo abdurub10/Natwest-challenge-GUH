@@ -1,20 +1,21 @@
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
-import { Inter, Source_Serif_4 } from "next/font/google";
+import { IBM_Plex_Mono, Space_Grotesk } from "next/font/google";
 import { PREFS_BOOT_SCRIPT } from "@/lib/client/prefs";
 import "./globals.css";
 
-// Source Serif 4 for the headroom figure and screen titles; Inter for everything else.
-// The CSS variables feed --font-serif / --font-sans in globals.css.
-const sourceSerif = Source_Serif_4({
-  variable: "--font-source-serif",
+// Space Grotesk for display and UI; IBM Plex Mono for numbered labels and metadata (ui-plan.md 3.3).
+// The CSS variables feed --font-serif / --font-sans / --font-mono in globals.css.
+const display = Space_Grotesk({
+  variable: "--font-display",
   subsets: ["latin"],
   display: "swap",
 });
 
-const inter = Inter({
-  variable: "--font-inter",
+const plexMono = IBM_Plex_Mono({
+  variable: "--font-plex-mono",
   subsets: ["latin"],
+  weight: ["400", "500"],
   display: "swap",
 });
 
@@ -22,7 +23,7 @@ export const metadata: Metadata = {
   title: "Headroom",
   description: "Your money, 90 days ahead, in plain English, with a plan.",
   applicationName: "Headroom",
-  appleWebApp: { capable: true, title: "Headroom", statusBarStyle: "default" },
+  appleWebApp: { capable: true, title: "Headroom", statusBarStyle: "black" },
   formatDetection: { telephone: false },
 };
 
@@ -30,12 +31,12 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#FBF8F3",
+  themeColor: "#10110F",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" data-text-size="normal" className={`${sourceSerif.variable} ${inter.variable} antialiased`} suppressHydrationWarning>
+    <html lang="en" data-text-size="normal" className={`${display.variable} ${plexMono.variable} antialiased`} suppressHydrationWarning>
       <head>
         {/* Apply the saved text size and language before first paint (no flash of normal text). */}
         <script dangerouslySetInnerHTML={{ __html: PREFS_BOOT_SCRIPT }} />
