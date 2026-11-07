@@ -1,0 +1,27 @@
+import { runForecast } from "@/lib/forecast";
+import { formatDay } from "@/lib/format";
+const today = "2026-11-07";
+let t = Date.now();
+const f = runForecast("aisha", today);
+const ms1 = Date.now() - t; t = Date.now();
+runForecast("aisha", today);
+const ms2 = Date.now() - t;
+console.log(`time first ${ms1} ms, cached ${ms2} ms; days ${f.days.length}; weeks ${f.weeks.length}`);
+console.log("balanceToday", f.balanceToday, "headroom", f.headroom);
+const at = (d: string) => f.days.find(x => x.date === d)!;
+for (const d of ["2026-11-26", "2026-11-30", "2026-12-01", "2026-12-23", "2026-12-30", "2026-12-31", "2027-01-07", "2027-01-14", "2027-01-21", "2027-01-25", "2027-01-28", "2027-02-01", "2027-02-02"]) { const x = at(d); console.log(d, x.status, x.p20.toFixed(0), x.p50.toFixed(0), x.p80.toFixed(0)); }
+const w = f.warnings[0];
+console.log("warning", w && { ...w, causes: undefined });
+for (const c of w?.causes ?? []) console.log("  cause", c.id, c.amount, c.ruleId, "|", c.label, "|", c.detail);
+console.log("warnings count", f.warnings.length, f.warnings.map(x => `${x.startDate}..${x.endDate}`));
+for (const wk of f.weeks) console.log("week", wk.startDate, wk.status, wk.lowP50.toFixed(0), wk.headline);
+for (const a of f.actions) console.log("action", a.id, a.effectByCliff, a.effectMonthly, a.eligibility, a.defaultOn, "|", a.title, "|", a.summary);
+const uc = at("2026-12-31").events.find(e => e.seriesId === "uc");
+console.log("UC 31 Dec", uc);
+console.log("history", f.history.months.map(m => `${m.month}:${m.low.toFixed(0)}/${m.overdraftDays}${m.fivePayday ? "*" : ""}@${m.lowDate.slice(5)}`).join(" "));
+console.log("rules", f.rulesFired.length); for (const r of f.rulesFired) console.log("  ", r.date, r.ruleId, r.note);
+console.log("recurring", f.recurring.map(s => `${s.id}:${s.cadence}`).join(" "));
+const plan = runForecast("aisha", today, { actionIds: ["set_aside_payday", "broadband_social_tariff", "free_school_meals"] });
+console.log("plan lowest", plan.headroom.lowest, plan.headroom.lowestDate, "warnings", plan.warnings.length);
+const hrs = runForecast("aisha", today, { income: { hoursPerWeek: 16, fromDate: "2027-01-01" } });
+console.log("16h lowest", hrs.headroom.lowest, hrs.headroom.lowestDate, "top action", hrs.actions[0].id, hrs.actions[0].summary);

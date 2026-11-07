@@ -1,0 +1,10 @@
+import { mockForecast } from "@/lib/mock/forecast";
+import { buildFacts } from "@/lib/forecast/facts";
+import { templateExplanation, templateSummary } from "@/lib/coach/template";
+import { checkNumbers } from "@/lib/coach/numberCheck";
+const f = buildFacts(mockForecast, "en");
+console.log(JSON.stringify({ ...f, allowedNumbers: f.allowedNumbers.length }, null, 1).slice(0, 2500));
+const t = templateExplanation(f);
+console.log(t);
+console.log(checkNumbers([t.headline, ...t.why, t.whatThisMeans, t.reassurance, t.nextStep], f.allowedNumbers));
+console.log(templateSummary(f));

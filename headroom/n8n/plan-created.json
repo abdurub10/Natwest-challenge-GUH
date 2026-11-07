@@ -1,0 +1,162 @@
+{
+  "name": "Headroom plan-created",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "headroom-plan",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "5b1f0a10-0001-4c1e-9a01-plancreated01",
+      "name": "Plan created",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 300],
+      "webhookId": "headroom-plan"
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            { "id": "cfg-app-url", "name": "appUrl", "value": "https://headroom.vercel.app", "type": "string" },
+            { "id": "cfg-shared", "name": "sharedSecret", "value": "REPLACE_WITH_N8N_SHARED_SECRET", "type": "string" },
+            { "id": "cfg-callback", "name": "callbackSecret", "value": "REPLACE_WITH_CALLBACK_SECRET", "type": "string" },
+            { "id": "cfg-from", "name": "twilioFrom", "value": "+14155238886", "type": "string" }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "5b1f0a10-0002-4c1e-9a01-plancreated02",
+      "name": "Config",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [220, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "loose" },
+          "conditions": [
+            {
+              "id": "secret-not-empty",
+              "leftValue": "={{ $json.sharedSecret }}",
+              "rightValue": "",
+              "operator": { "type": "string", "operation": "notEmpty", "singleValue": true }
+            },
+            {
+              "id": "secret-matches",
+              "leftValue": "={{ $json.headers['x-headroom-secret'] || '' }}",
+              "rightValue": "={{ $json.sharedSecret }}",
+              "operator": { "type": "string", "operation": "equals" }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "5b1f0a10-0003-4c1e-9a01-plancreated03",
+      "name": "Secret ok?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [440, 300]
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            { "id": "msg-profile", "name": "profileId", "value": "={{ $json.body.profileId || 'aisha' }}", "type": "string" },
+            { "id": "msg-to", "name": "to", "value": "={{ $json.body.to }}", "type": "string" },
+            { "id": "msg-message", "name": "message", "value": "={{ $json.body.message }}", "type": "string" }
+          ]
+        },
+        "includeOtherFields": false,
+        "options": {}
+      },
+      "id": "5b1f0a10-0004-4c1e-9a01-plancreated04",
+      "name": "Message",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [660, 200]
+    },
+    {
+      "parameters": {
+        "from": "={{ $('Config').item.json.twilioFrom.replace('whatsapp:', '') }}",
+        "to": "={{ $json.to.replace('whatsapp:', '') }}",
+        "toWhatsapp": true,
+        "message": "={{ $json.message }}",
+        "options": {}
+      },
+      "id": "5b1f0a10-0005-4c1e-9a01-plancreated05",
+      "name": "Send WhatsApp",
+      "type": "n8n-nodes-base.twilio",
+      "typeVersion": 1,
+      "position": [880, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Config').item.json.appUrl }}/api/activity",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "x-callback-secret", "value": "={{ $('Config').item.json.callbackSecret }}" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ profileId: $('Message').item.json.profileId, kind: 'message_sent', title: 'Plan sent by WhatsApp', detail: String($('Message').item.json.message || '').replace(/\\s+/g, ' ').slice(0, 60), source: 'n8n' }) }}",
+        "options": { "timeout": 5000 }
+      },
+      "id": "5b1f0a10-0006-4c1e-9a01-plancreated06",
+      "name": "Log to Headroom",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1100, 200]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"ok\": true\n}",
+        "options": {}
+      },
+      "id": "5b1f0a10-0007-4c1e-9a01-plancreated07",
+      "name": "Respond ok",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1320, 200]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"ok\": false,\n  \"error\": \"bad secret\"\n}",
+        "options": { "responseCode": 401 }
+      },
+      "id": "5b1f0a10-0008-4c1e-9a01-plancreated08",
+      "name": "Respond 401",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [660, 420]
+    }
+  ],
+  "connections": {
+    "Plan created": { "main": [[{ "node": "Config", "type": "main", "index": 0 }]] },
+    "Config": { "main": [[{ "node": "Secret ok?", "type": "main", "index": 0 }]] },
+    "Secret ok?": {
+      "main": [
+        [{ "node": "Message", "type": "main", "index": 0 }],
+        [{ "node": "Respond 401", "type": "main", "index": 0 }]
+      ]
+    },
+    "Message": { "main": [[{ "node": "Send WhatsApp", "type": "main", "index": 0 }]] },
+    "Send WhatsApp": { "main": [[{ "node": "Log to Headroom", "type": "main", "index": 0 }]] },
+    "Log to Headroom": { "main": [[{ "node": "Respond ok", "type": "main", "index": 0 }]] }
+  },
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "pinData": {},
+  "meta": { "templateCredsSetupCompleted": false }
+}

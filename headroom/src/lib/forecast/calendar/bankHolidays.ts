@@ -1,0 +1,17 @@
+// England and Wales bank holidays, 2025 to 2027 (gov.uk/bank-holidays).
+import type { ISODate } from "../types";
+
+export const BANK_HOLIDAYS_EW: readonly ISODate[] = [
+  // 2025
+  "2025-01-01", "2025-04-18", "2025-04-21", "2025-05-05", "2025-05-26", "2025-08-25", "2025-12-25", "2025-12-26",
+  // 2026
+  "2026-01-01", "2026-04-03", "2026-04-06", "2026-05-04", "2026-05-25", "2026-08-31", "2026-12-25", "2026-12-28",
+  // 2027
+  "2027-01-01", "2027-03-26", "2027-03-29", "2027-05-03", "2027-05-31", "2027-08-30", "2027-12-27", "2027-12-28",
+];
+
+const SET = new Set<ISODate>(BANK_HOLIDAYS_EW);
+
+export function isBankHoliday(d: ISODate): boolean {
+  return SET.has(d);
+}

@@ -1,0 +1,22 @@
+import { NextRequest } from "next/server";
+import { GET } from "@/app/api/forecast/route";
+import { POST } from "@/app/api/whatif/route";
+(async () => {
+  let t = Date.now();
+  let r = await GET(new NextRequest("http://localhost/api/forecast?persona=aisha&lang=en"));
+  let j: any = await r.json();
+  console.log("forecast", r.status, Date.now() - t, "ms", Object.keys(j).join(","), "explanation:", j.explanation?.headline);
+  r = await GET(new NextRequest("http://localhost/api/forecast?persona=bob")); console.log("unknown", r.status, await r.text());
+  r = await GET(new NextRequest("http://localhost/api/forecast?lang=fr")); console.log("bad lang", r.status, await r.text());
+  t = Date.now();
+  r = await POST(new Request("http://localhost/api/whatif", { method: "POST", body: JSON.stringify({ actionIds: ["set_aside_payday", "free_school_meals"] }) }));
+  j = await r.json(); console.log("whatif", r.status, Date.now() - t, "ms", j.headroom);
+  t = Date.now();
+  r = await POST(new Request("http://localhost/api/whatif", { method: "POST", body: JSON.stringify({ income: { hoursPerWeek: 16, fromDate: "2027-01-01" } }) }));
+  j = await r.json(); console.log("whatif 16h", r.status, Date.now() - t, "ms", j.headroom, j.actions[0].id);
+  r = await POST(new Request("http://localhost/api/whatif", { method: "POST", body: JSON.stringify({ removeSeriesIds: ["disney"], extraExpenses: [{ date: "2027-01-12", amount: 120, label: "School trip" }] }) }));
+  j = await r.json(); console.log("whatif trip", r.status, j.headroom.lowest, j.days.find((d: any) => d.date === "2027-01-12").events.map((e: any) => e.label));
+  r = await POST(new Request("http://localhost/api/whatif", { method: "POST", body: JSON.stringify({ actionIds: ["take_a_loan"] }) })); console.log("bad action", r.status, (await r.text()).slice(0, 120));
+  r = await POST(new Request("http://localhost/api/whatif", { method: "POST", body: "{nope" })); console.log("bad json", r.status, await r.text());
+  r = await POST(new Request("http://localhost/api/whatif", { method: "POST", body: "" })); console.log("empty", r.status, (await r.json()).headroom.lowest);
+})();

@@ -1,0 +1,21 @@
+import { it, expect, vi } from "vitest";
+vi.mock("next/server", async (orig) => ({ ...(await orig<any>()), connection: async () => {} }));
+it("GET handlers", async () => {
+  const health = await import("@/app/api/health/route");
+  const h = await (await health.GET()).json();
+  console.log("health", h);
+  expect(h.ok).toBe(true);
+  expect(h.store).toBe("memory");
+  const n8n = await import("@/app/api/demo/n8n/route");
+  console.log("n8n", await (await n8n.GET()).json());
+  const voice = await import("@/app/api/voice/token/route");
+  const v = await voice.GET();
+  console.log("voice", v.status, await v.json());
+  expect(v.status).toBe(503);
+  const act = await import("@/app/api/activity/route");
+  const { NextRequest } = await import("next/server");
+  const a = await act.GET(new NextRequest("http://x/api/activity?persona=aisha"));
+  console.log("activity", a.status, await a.json());
+  const bad = await act.GET(new NextRequest("http://x/api/activity?persona=BAD!"));
+  expect(bad.status).toBe(400);
+});

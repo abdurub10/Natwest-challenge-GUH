@@ -1,0 +1,256 @@
+{
+  "name": "Headroom payday-reminder",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [{ "field": "weeks", "weeksInterval": 1, "triggerAtDay": [5], "triggerAtHour": 9, "triggerAtMinute": 0 }]
+        }
+      },
+      "id": "7c2e1b20-0001-4d2f-8b02-reminder0001",
+      "name": "Fridays 09:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 160]
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            { "id": "s-app-url", "name": "appUrl", "value": "https://headroom.vercel.app", "type": "string" },
+            { "id": "s-callback", "name": "callbackSecret", "value": "REPLACE_WITH_CALLBACK_SECRET", "type": "string" },
+            { "id": "s-from", "name": "twilioFrom", "value": "+14155238886", "type": "string" },
+            { "id": "s-to", "name": "demoTo", "value": "+447XXXXXXXXX", "type": "string" },
+            { "id": "s-profile", "name": "profileId", "value": "aisha", "type": "string" }
+          ]
+        },
+        "includeOtherFields": false,
+        "options": {}
+      },
+      "id": "7c2e1b20-0002-4d2f-8b02-reminder0002",
+      "name": "Config (schedule)",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [220, 160]
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.appUrl }}/api/forecast?persona={{ $json.profileId }}",
+        "options": { "timeout": 10000 }
+      },
+      "id": "7c2e1b20-0003-4d2f-8b02-reminder0003",
+      "name": "Get forecast",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [440, 160]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Pick today's events and the week status from the Headroom forecast (plan section 17.3).\n// Numbers come from the engine; this only formats them.\nconst f = $input.first().json;\nconst cfg = $('Config (schedule)').first().json;\nconst DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];\nconst MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];\nconst parse = (d) => new Date(d + 'T00:00:00Z');\nconst fmtDay = (d) => { const x = parse(d); return DAYS[x.getUTCDay()] + ' ' + x.getUTCDate() + ' ' + MONTHS[x.getUTCMonth()]; };\nconst money = (n) => { const r = Math.round(n); const s = '\\u00a3' + Math.abs(r).toLocaleString('en-GB'); return r < 0 ? '\\u2212' + s : s; };\nconst t = parse(f.today);\nt.setUTCDate(t.getUTCDate() + ((5 - t.getUTCDay() + 7) % 7));\nconst date = t.toISOString().slice(0, 10);\nconst day = (f.days || []).find((d) => d.date === date);\nconst credit = day ? day.events.filter((e) => e.amount > 0).sort((a, b) => b.amount - a.amount)[0] : null;\nconst week = (f.weeks || []).find((w) => { const s = parse(w.startDate).getTime(); const x = parse(date).getTime(); return x >= s && x < s + 7 * 86400000; });\nconst words = { comfortable: 'Comfortable', tight: 'Tight', short: 'Short' };\nconst parts = [fmtDay(date) + '.'];\nif (credit) parts.push(credit.label + ' due today.');\nif (week) parts.push('This week looks ' + words[week.status] + '.');\nparts.push('Lowest point ahead: about ' + money(f.headroom.lowest) + ' on ' + fmtDay(f.headroom.lowestDate) + '.');\nparts.push('Open Headroom to see what you can do.');\nreturn [{ json: { profileId: cfg.profileId, to: cfg.demoTo, message: parts.join(' ').slice(0, 320) } }];"
+      },
+      "id": "7c2e1b20-0004-4d2f-8b02-reminder0004",
+      "name": "Compose reminder",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [660, 160]
+    },
+    {
+      "parameters": {
+        "from": "={{ $('Config (schedule)').item.json.twilioFrom.replace('whatsapp:', '') }}",
+        "to": "={{ $json.to.replace('whatsapp:', '') }}",
+        "toWhatsapp": true,
+        "message": "={{ $json.message }}",
+        "options": {}
+      },
+      "id": "7c2e1b20-0005-4d2f-8b02-reminder0005",
+      "name": "Send WhatsApp (schedule)",
+      "type": "n8n-nodes-base.twilio",
+      "typeVersion": 1,
+      "position": [880, 160]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Config (schedule)').item.json.appUrl }}/api/activity",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "x-callback-secret", "value": "={{ $('Config (schedule)').item.json.callbackSecret }}" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ profileId: $('Compose reminder').item.json.profileId, kind: 'reminder_sent', title: 'Friday reminder sent by WhatsApp', detail: String($('Compose reminder').item.json.message || '').slice(0, 60), source: 'n8n' }) }}",
+        "options": { "timeout": 5000 }
+      },
+      "id": "7c2e1b20-0006-4d2f-8b02-reminder0006",
+      "name": "Log to Headroom (schedule)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1100, 160]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "headroom-reminder-now",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "7c2e1b20-0007-4d2f-8b02-reminder0007",
+      "name": "Reminder now",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 480],
+      "webhookId": "headroom-reminder-now"
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            { "id": "w-app-url", "name": "appUrl", "value": "https://headroom.vercel.app", "type": "string" },
+            { "id": "w-shared", "name": "sharedSecret", "value": "REPLACE_WITH_N8N_SHARED_SECRET", "type": "string" },
+            { "id": "w-callback", "name": "callbackSecret", "value": "REPLACE_WITH_CALLBACK_SECRET", "type": "string" },
+            { "id": "w-from", "name": "twilioFrom", "value": "+14155238886", "type": "string" }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "7c2e1b20-0008-4d2f-8b02-reminder0008",
+      "name": "Config (now)",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [220, 480]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "loose" },
+          "conditions": [
+            {
+              "id": "now-secret-not-empty",
+              "leftValue": "={{ $json.sharedSecret }}",
+              "rightValue": "",
+              "operator": { "type": "string", "operation": "notEmpty", "singleValue": true }
+            },
+            {
+              "id": "now-secret-matches",
+              "leftValue": "={{ $json.headers['x-headroom-secret'] || '' }}",
+              "rightValue": "={{ $json.sharedSecret }}",
+              "operator": { "type": "string", "operation": "equals" }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "7c2e1b20-0009-4d2f-8b02-reminder0009",
+      "name": "Secret ok? (now)",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [440, 480]
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            { "id": "n-profile", "name": "profileId", "value": "={{ $json.body.profileId || 'aisha' }}", "type": "string" },
+            { "id": "n-to", "name": "to", "value": "={{ $json.body.to }}", "type": "string" },
+            { "id": "n-message", "name": "message", "value": "={{ $json.body.message }}", "type": "string" }
+          ]
+        },
+        "includeOtherFields": false,
+        "options": {}
+      },
+      "id": "7c2e1b20-0010-4d2f-8b02-reminder0010",
+      "name": "Reminder message",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [660, 400]
+    },
+    {
+      "parameters": {
+        "from": "={{ $('Config (now)').item.json.twilioFrom.replace('whatsapp:', '') }}",
+        "to": "={{ $json.to.replace('whatsapp:', '') }}",
+        "toWhatsapp": true,
+        "message": "={{ $json.message }}",
+        "options": {}
+      },
+      "id": "7c2e1b20-0011-4d2f-8b02-reminder0011",
+      "name": "Send WhatsApp (now)",
+      "type": "n8n-nodes-base.twilio",
+      "typeVersion": 1,
+      "position": [880, 400]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Config (now)').item.json.appUrl }}/api/activity",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "x-callback-secret", "value": "={{ $('Config (now)').item.json.callbackSecret }}" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ profileId: $('Reminder message').item.json.profileId, kind: 'reminder_sent', title: 'Friday reminder sent by WhatsApp', detail: String($('Reminder message').item.json.message || '').slice(0, 60), source: 'n8n' }) }}",
+        "options": { "timeout": 5000 }
+      },
+      "id": "7c2e1b20-0012-4d2f-8b02-reminder0012",
+      "name": "Log to Headroom (now)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1100, 400]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"ok\": true\n}",
+        "options": {}
+      },
+      "id": "7c2e1b20-0013-4d2f-8b02-reminder0013",
+      "name": "Respond ok (now)",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1320, 400]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"ok\": false,\n  \"error\": \"bad secret\"\n}",
+        "options": { "responseCode": 401 }
+      },
+      "id": "7c2e1b20-0014-4d2f-8b02-reminder0014",
+      "name": "Respond 401 (now)",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [660, 600]
+    }
+  ],
+  "connections": {
+    "Fridays 09:00": { "main": [[{ "node": "Config (schedule)", "type": "main", "index": 0 }]] },
+    "Config (schedule)": { "main": [[{ "node": "Get forecast", "type": "main", "index": 0 }]] },
+    "Get forecast": { "main": [[{ "node": "Compose reminder", "type": "main", "index": 0 }]] },
+    "Compose reminder": { "main": [[{ "node": "Send WhatsApp (schedule)", "type": "main", "index": 0 }]] },
+    "Send WhatsApp (schedule)": { "main": [[{ "node": "Log to Headroom (schedule)", "type": "main", "index": 0 }]] },
+    "Reminder now": { "main": [[{ "node": "Config (now)", "type": "main", "index": 0 }]] },
+    "Config (now)": { "main": [[{ "node": "Secret ok? (now)", "type": "main", "index": 0 }]] },
+    "Secret ok? (now)": {
+      "main": [
+        [{ "node": "Reminder message", "type": "main", "index": 0 }],
+        [{ "node": "Respond 401 (now)", "type": "main", "index": 0 }]
+      ]
+    },
+    "Reminder message": { "main": [[{ "node": "Send WhatsApp (now)", "type": "main", "index": 0 }]] },
+    "Send WhatsApp (now)": { "main": [[{ "node": "Log to Headroom (now)", "type": "main", "index": 0 }]] },
+    "Log to Headroom (now)": { "main": [[{ "node": "Respond ok (now)", "type": "main", "index": 0 }]] }
+  },
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "pinData": {},
+  "meta": { "templateCredsSetupCompleted": false }
+}
