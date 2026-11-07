@@ -1,6 +1,7 @@
 "use client";
 // Ask: the chat coach. Answers come from POST /api/coach, which runs the forecast as a tool.
 import { CoachChat } from "@/components/CoachChat";
+import { VoiceCoach } from "@/components/VoiceCoach";
 import { useAppState } from "@/components/AppState";
 import { ScreenHeader } from "@/components/ui";
 
@@ -9,6 +10,7 @@ export default function AskPage() {
   return (
     <>
       <ScreenHeader title={t("ask.title")} subtitle={t("ask.subtitle")} />
+      <VoiceCoach />
       <CoachChat />
     </>
   );

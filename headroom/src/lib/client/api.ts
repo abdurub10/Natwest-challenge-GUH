@@ -123,6 +123,23 @@ export function demoN8n(enabled: boolean, opts: RequestOpts = {}): Promise<{ ena
   return request<{ enabled: boolean; configured?: boolean }>("/api/demo/n8n", { method: "POST", body: json({ enabled }), ...opts });
 }
 
+/** GET /api/voice/token -> signed ElevenLabs URL plus the dynamic variables the agent opens with */
+export interface VoiceSession { signedUrl: string; dynamicVariables: Record<string, string> }
+export function voiceSession(lang: Language, opts: RequestOpts = {}): Promise<VoiceSession> {
+  const q = new URLSearchParams({ persona: PERSONA, lang });
+  return request<VoiceSession>(`/api/voice/token?${q}`, { ...opts, timeoutMs: opts.timeoutMs ?? 10000 });
+}
+
+/** POST /api/voice/tool { persona, lang, name, params } -> { result } */
+export function voiceTool(lang: Language, name: string, params: Record<string, unknown>, opts: RequestOpts = {}): Promise<{ result: unknown }> {
+  return request<{ result: unknown }>("/api/voice/tool", {
+    method: "POST",
+    body: json({ persona: PERSONA, lang, name, params: params ?? {} }),
+    ...opts,
+    timeoutMs: opts.timeoutMs ?? 18000,
+  });
+}
+
 export function isAbortError(e: unknown): boolean {
   return e instanceof DOMException && e.name === "AbortError";
 }
