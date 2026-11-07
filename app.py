@@ -15,6 +15,7 @@ from dotenv import load_dotenv
 load_dotenv(Path(__file__).resolve().parent / ".env")
 
 from engine import backtest  # noqa: E402
+from engine import realworld as REAL  # noqa: E402
 from engine import config as C  # noqa: E402
 from engine.aggregate import LEDGER, area_forecast, city_summary  # noqa: E402
 from engine.allocate import GRANT, allocate  # noqa: E402
@@ -406,8 +407,40 @@ with tab_trust:
                            xaxis=dict(title="Forecast probability", gridcolor="#EEE"), yaxis=dict(title="Observed frequency", gridcolor="#EEE"))
         st.plotly_chart(figC, use_container_width=True, config={"displayModeBar": False})
     st.info("Honest limit: the held-out future is simulated with the same model family, so this proves the pipeline and its uncertainty are "
-            "correct — not real-world accuracy. Next step: a hindcast of the 2022 energy crisis using only 2021 data, scored against ONS claimant "
-            "counts, DWP Universal Credit and Citizens Advice data by local authority.")
+            "correct — not real-world accuracy. The real-world check below compares the map with independent ONS data.")
+
+    st.markdown("---")
+    st.markdown("### Real-world check: does the map agree with independent, real data?")
+    real = REAL.load()
+    if real is None:
+        st.caption("Run scripts/prepare_realworld.py to download ONS claimant counts.")
+    else:
+        rc = REAL.check(base, real)
+        q1, q2, q3 = st.columns(3)
+        q1.metric("Agreement with real claimant rates", f"ρ = {rc['undertow_spearman']:.2f}",
+                  help="Spearman rank correlation across neighbourhoods")
+        q2.metric("Neighbourhoods compared", f"{rc['n']}")
+        q3.metric("Top-50 hardest-hit areas shared", f"{rc['undertow_top50']} / 50")
+        g1, g2 = st.columns([3, 2])
+        with g1:
+            pts = rc["points"]
+            figR2 = go.Figure(go.Scatter(x=pts["rate"] * 100, y=pts["rate_2026"], mode="markers",
+                                         marker=dict(size=6, color=ACCENT, opacity=0.55),
+                                         text=pts["msoa_name"] + " (" + pts["lad"] + ")",
+                                         hovertemplate="%{text}<br>Undertow %{x:.0f}% · real claimants %{y:.1f}%<extra></extra>"))
+            figR2.update_layout(height=300, margin=dict(l=0, r=0, t=10, b=0), plot_bgcolor="white",
+                                xaxis=dict(title=f"Undertow forecast: % households short in {weeks} weeks", gridcolor="#EEE"),
+                                yaxis=dict(title=f"Real claimant rate, {rc['month']} (% aged 16-64)", gridcolor="#EEE"))
+            st.plotly_chart(figR2, use_container_width=True, config={"displayModeBar": False})
+        with g2:
+            st.markdown(f"**Data:** ONS Claimant Count ({rc['month']}, Nomis), mapped from 2021 to 2011 neighbourhoods "
+                        "with the ONS lookup. Not used anywhere in the model.")
+            st.markdown(f"**For reference:** the 2019 deprivation score alone agrees at ρ = {rc['deprivation_spearman']:.2f} "
+                        f"({rc['deprivation_top50']} / 50 shared). That's expected: our synthetic households are built from "
+                        "deprivation, so on *where* hardship is today, Undertow can't beat its own input.")
+            st.markdown("**What Undertow adds** is what a deprivation score can't give: *when* households run short, "
+                        "*why*, *what a policy change does*, and *where a budget helps most*.")
+            st.caption("This checks where hardship is, not forecast accuracy: no public data contains households' future cash flow.")
 
     st.markdown("---")
     p1, p2 = st.columns(2)

@@ -25,8 +25,10 @@ Undertow simulates the next 8 weeks of cash flow for every (synthetic) NatWest c
 | Privacy | Laplace noise on each area rate scaled to its sensitivity (ε = 1), suppression under 50 customers, drivers rounded to 5%, only area totals leave the "bank" |
 | AI | Claude with forced tool output for briefings and policy parsing; every number in a briefing is checked against the facts, with retry and template fallback |
 
-## Results (held-out synthetic future, 6 weeks)
-Shown live on the Trust tab. In the current run: household AUC 0.98, calibration close to perfect, and area-level error about half that of deprivation-rank and persistence baselines. The honest limit: the held-out future comes from the same model family, so this checks the pipeline and its uncertainty, not real-world accuracy. The next step is a hindcast of the 2022 energy crisis against ONS claimant counts, DWP Universal Credit and Citizens Advice data.
+## Results
+**Real-world check:** the forecast map agrees with independent ONS Claimant Count data (Sept 2026) across 344 neighbourhoods at Spearman ρ = 0.84 (the deprivation input alone: 0.92). Built by `scripts/prepare_realworld.py`.
+
+**Held-out synthetic future (6 weeks):** shown live on the Trust tab. In the current run: household AUC 0.98, calibration close to perfect, and area-level error about half that of deprivation-rank and persistence baselines. The honest limit: the held-out future comes from the same model family, so this checks the pipeline and its uncertainty, not real-world accuracy. The next step is a hindcast of the 2022 energy crisis against ONS claimant counts, DWP Universal Credit and Citizens Advice data.
 
 ## Run it
 ```bash
