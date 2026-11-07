@@ -1,0 +1,13 @@
+[runner]
+magicEnabled = false
+
+[theme]
+base = "light"
+primaryColor = "#5A2D82"
+backgroundColor = "#FBF8F3"
+secondaryBackgroundColor = "#F2EEE7"
+textColor = "#1B1F2A"
+font = "sans serif"
+
+[browser]
+gatherUsageStats = false

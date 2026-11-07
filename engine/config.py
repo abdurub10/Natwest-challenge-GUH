@@ -103,6 +103,11 @@ CUSTOMER_PROPENSITY_LEAST_DEPRIVED = 1.2
 AREA_SHOCK_PROB = 0.18                 # chance an area/sector has a bad stretch in the window
 AREA_SHOCK_SIZE = (0.15, 0.40)         # wage reduction range during the shock
 
+TYPE_SHORT = {"gig_worker": "Gig workers", "zero_hours": "Zero-hours", "uc_family": "UC families",
+              "carer": "Carers", "pensioner_low": "Pensioners", "salaried_stretched": "Stretched salaried"}
+DRIVER_SHORT = {"income_drop": "Pay / hours cut", "uc_timing": "UC lower or late", "surprise_cost": "Surprise costs",
+                "christmas": "Christmas", "structural": "Costs > income"}
+
 DRIVERS = ["income_drop", "uc_timing", "surprise_cost", "christmas", "structural"]
 DRIVER_LABELS = {
     "income_drop": "Pay dropped or hours cut",

@@ -63,7 +63,9 @@ def area_forecast(areas: pd.DataFrame, hh: pd.DataFrame, mix: np.ndarray, res: S
     cell_rate_true = (S + SHRINK * city_type[None, :]) / (n + SHRINK)
     rate_true = (mix * cell_rate_true).sum(1)
     sensitivity = (mix / (n + SHRINK)).max(1)          # max change from one household
-    rng = np.random.default_rng(_seed(release, k))
+    # The noise draw is fixed per area and horizon (not per scenario), so scenario
+    # comparisons show the policy effect rather than two different noise draws.
+    rng = np.random.default_rng(_seed("undertow-dp", k))
     noise = rng.laplace(0.0, sensitivity / C.EPSILON) if private else np.zeros(A)
     rate = np.clip(rate_true + noise, 0, 1)
     cell_rate = cell_rate_true

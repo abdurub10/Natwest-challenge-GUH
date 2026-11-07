@@ -210,13 +210,14 @@ with tab_map:
     if metric == "Change vs baseline":
         ranked = ranked.assign(chg=vals.loc[ranked["area_id"]].to_numpy()).sort_values("chg", ascending=False)
     names = ranked["msoa_name"].tolist()
-    if sel is not None and not fc_i.loc[sel, "suppressed"]:
-        st.session_state["area_name"] = fc_i.loc[sel, "msoa_name"]
-    default = st.session_state.get("area_name", names[0])
+    last = st.session_state.get("last_map_sel")
+    if sel is not None and sel != last and not fc_i.loc[sel, "suppressed"]:
+        st.session_state["area_pick"] = fc_i.loc[sel, "msoa_name"]   # map click drives the picker
+    st.session_state["last_map_sel"] = sel
+    if st.session_state.get("area_pick") not in names:
+        st.session_state["area_pick"] = names[0]
     with right:
-        area_name = st.selectbox("Neighbourhood (click the map or pick)", names,
-                                 index=names.index(default) if default in names else 0, key="area_pick")
-        st.session_state["area_name"] = area_name
+        area_name = st.selectbox("Neighbourhood (click the map or pick)", names, key="area_pick")
         row = fc[fc["msoa_name"] == area_name].iloc[0]
         a_id = int(row["area_id"])
         st.markdown(f"<div class='ut-kicker'>{row['lad']} · deprivation decile {int(row['gm_decile'])} of 10 in Greater Manchester</div>",
@@ -244,16 +245,16 @@ with tab_map:
         st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
 
         c1, c2 = st.columns(2)
-        drv = sorted(((C.DRIVER_LABELS[d], row[f"drv_{d}"]) for d in C.DRIVERS), key=lambda x: x[1])
+        drv = sorted(((C.DRIVER_SHORT[d], row[f"drv_{d}"]) for d in C.DRIVERS), key=lambda x: x[1])
         fig_d = go.Figure(go.Bar(x=[v * 100 for _, v in drv], y=[l for l, _ in drv], orientation="h", marker_color=ACCENT,
                                  hovertemplate="%{y}: decisive in %{x:.0f}% of shortfalls<extra></extra>"))
-        fig_d.update_layout(height=210, margin=dict(l=0, r=0, t=26, b=0), title=dict(text="Why: decisive drivers (% of shortfalls)", font=dict(size=13)),
+        fig_d.update_layout(height=210, margin=dict(l=0, r=0, t=26, b=0), title=dict(text="Why (% of shortfalls)", font=dict(size=13)),
                             xaxis=dict(range=[0, 100], gridcolor="#EEE"), plot_bgcolor="white")
         c1.plotly_chart(fig_d, use_container_width=True, config={"displayModeBar": False})
-        who = sorted(((C.TYPE_LABELS[t], row[f"who_{t}"]) for t in C.TYPES), key=lambda x: x[1])
+        who = sorted(((C.TYPE_SHORT[t], row[f"who_{t}"]) for t in C.TYPES), key=lambda x: x[1])
         fig_w = go.Figure(go.Bar(x=[v * 100 for _, v in who], y=[l for l, _ in who], orientation="h", marker_color="#DD5A3E",
                                  hovertemplate="%{y}: %{x:.0f}% of those short<extra></extra>"))
-        fig_w.update_layout(height=210, margin=dict(l=0, r=0, t=26, b=0), title=dict(text="Who: share of households short", font=dict(size=13)),
+        fig_w.update_layout(height=210, margin=dict(l=0, r=0, t=26, b=0), title=dict(text="Who (% of those short)", font=dict(size=13)),
                             xaxis=dict(range=[0, 100], gridcolor="#EEE"), plot_bgcolor="white")
         c2.plotly_chart(fig_w, use_container_width=True, config={"displayModeBar": False})
 
