@@ -13,8 +13,8 @@ def available() -> bool:
 
 def speech_text(b) -> str:
     """Turn a Briefing into something natural to listen to."""
-    parts = [b.headline, *b.whats_happening, b.who_is_affected,
-             "Suggested actions: " + "; ".join(b.suggested_actions) + ".", b.confidence_note]
+    # Short enough for a live demo (~20-25 seconds): headline, who, top action
+    parts = [b.headline, b.who_is_affected, "Suggested first step: " + b.suggested_actions[0] + "."]
     return " ".join(p.strip() for p in parts if p).replace("%", " percent").replace(" · ", ", ")
 
 
