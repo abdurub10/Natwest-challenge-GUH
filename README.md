@@ -30,7 +30,7 @@ Shown live on the Trust tab. In the current run: household AUC 0.98, calibration
 
 ## Run it
 ```bash
-python3.12 -m venv .venv && .venv/bin/pip install pandas numpy pyarrow geopandas shapely streamlit pydeck plotly anthropic python-dotenv pytest pydantic
+python3.12 -m venv .venv && .venv/bin/pip install pandas numpy pyarrow geopandas shapely streamlit pydeck plotly anthropic elevenlabs python-dotenv pytest pydantic
 ```
 
 ```bash

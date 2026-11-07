@@ -21,6 +21,7 @@ from engine.allocate import GRANT, allocate  # noqa: E402
 from engine.model import World  # noqa: E402
 from engine.scenarios import PRESETS, Scenario  # noqa: E402
 from llm import briefing as BR  # noqa: E402
+from llm import voice as VOICE  # noqa: E402
 
 st.set_page_config(page_title="Undertow", page_icon="🌊", layout="wide")
 
@@ -278,6 +279,16 @@ with tab_map:
             st.markdown(f"""<div class='ut-card ut-brief'><h4>{b.headline}</h4><ul>{items}</ul>
 <p><b>Who:</b> {b.who_is_affected}</p><p><b>Suggested actions</b></p><ul>{acts}</ul>
 <p style='color:#5B6270'>{b.confidence_note}</p></div>""", unsafe_allow_html=True)
+            audio_cache = st.session_state.setdefault("audio", {})
+            if VOICE.available():
+                if st.button("🔊 Listen to this briefing", use_container_width=True) and bkey not in audio_cache:
+                    with st.spinner("ElevenLabs is reading the briefing…"):
+                        try:
+                            audio_cache[bkey] = VOICE.synthesize(VOICE.speech_text(b))
+                        except Exception as e:
+                            st.warning(f"Voice unavailable ({type(e).__name__}). The written briefing is above.")
+                if bkey in audio_cache:
+                    st.audio(audio_cache[bkey], format="audio/mpeg", autoplay=True)
             src = "Written by Claude from area totals only" if b.source == "claude" else f"Fallback template ({b.source})"
             st.caption(f"{src} · every number checked against the data"
                        + (f" · {len(b.rejected)} invented number(s) caught and rewritten" if b.rejected else " · 0 rejected"))
