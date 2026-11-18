@@ -10,27 +10,93 @@ Bank apps show what you spent last month, not what's coming next month. But most
 
 ## What we built
 
-- **Headroom** ([`headroom/`](headroom)) is a customer app that forecasts your balance 90 days ahead with an uncertainty range. It shows the first shortfall and its named causes, then ranks the fixes (social tariffs, Council Tax Support, saving on the extra payday). You can turn each fix on and watch the forecast update. It comes with typed and voice AI coaches and works in English, Urdu and Polish.
-- **Undertow** ([`undertow/`](undertow)) is an area view for councils and food banks. It forecasts hardship across all 346 Greater Manchester neighbourhoods up to 8 weeks ahead, simulates policy shocks, and shows where a crisis fund protects the most households.
+| | **Headroom** ([`headroom/`](headroom)) | **Undertow** ([`undertow/`](undertow)) |
+|---|---|---|
+| For | The customer | Councils, food banks, NatWest's vulnerability team |
+| Forecasts | One person's balance, 90 days ahead | Hardship in 346 Greater Manchester neighbourhoods, 8 weeks ahead |
+| Key features | Shortfall warning with named causes, ranked fixes you can toggle, typed and voice AI coach, English/Urdu/Polish | Hardship map with a time slider, policy-shock simulator, crisis-fund allocator, AI briefings |
+| Stack | Next.js · TypeScript | Python · Streamlit |
 
-## How it works
+Our core rule: **deterministic engines do the maths, and AI does the language.** Claude writes explanations from numbers the engine has already computed. A number checker rejects any £ amount or date that isn't in the facts, and banned words (e.g. "loan", "borrow") stop the coach from pushing people into debt.
 
-- **Deterministic engines do the maths, and AI does the language.** Claude writes explanations from numbers the engine has already computed. A number checker rejects any £ amount or date that isn't in the facts.
-- **Headroom:** detects recurring transactions, applies UK rules (UC taper and assessment periods, bank holidays, council tax, energy cap) and runs 200 bootstrap paths to get P20/P50/P80 bands. Causes are measured by re-running the forecast without each one.
-- **Undertow:** simulates 36k synthetic households × 200 Monte Carlo futures × 56 days on real ONS geography and deprivation data. It uses a Markov income model, compound-Poisson shocks and census reweighting, and protects each area's figures with Laplace differential privacy (ε = 1).
+## Implementation: Headroom
+
+A pure TypeScript forecast engine (`src/lib/forecast/`), so the same inputs always give the same output.
+
+1. **Recurring detection:** finds wages, benefits, rent, direct debits and weekly spending patterns in 12 months of transactions.
+2. **UK calendar rules:** UC assessment periods with the 55% taper and work allowance, early payment before weekends and bank holidays, the quarterly energy cap, council tax in 10 instalments, April rises, annual repeats.
+3. **Uncertainty:** 200 bootstrap paths that resample each bill's past amounts and recompute UC from each path's wages, giving P20/P50/P80 bands per day.
+4. **Causes:** each driver is removed in turn and the forecast re-run to measure how much it moves the lowest point.
+5. **Actions:** each fix is simulated through the same engine and ranked by pounds gained at the shortfall date.
+
+| AI feature | How it works |
+|---|---|
+| "Why" explanation | Claude turns the engine's facts into plain English, and every number is checked |
+| Chat coach | Claude with tools (`get_forecast`, `simulate_scenario`, `list_actions`, …). "What if" questions become zod-validated scenarios |
+| Voice coach | ElevenLabs Conversational AI calling the same tools |
+| Reminders | n8n + Twilio send the plan and payday reminders over WhatsApp, with a direct Twilio send if n8n fails |
+
+## Implementation: Undertow
+
+**36,000 synthetic households × 200 Monte Carlo futures × 56 days**, built on real government geography and deprivation data.
+
+| Step | Method |
+|---|---|
+| Geography | ONS MSOA boundaries + English Indices of Deprivation 2019 |
+| Population | 6 household types, mix driven by real deprivation; deprived and UC households deliberately under-sampled (like a real bank's customer base) |
+| Income | Markov regime model (normal / reduced / lost hours), with shocks shared across area and sector |
+| Costs | Bills on real due dates with working-day shifts, Christmas, compound-Poisson surprise costs |
+| Universal Credit | Recalculated in every future, per assessment period, from that path's wages |
+| Shortfall | Balance + savings below overdraft limit. A driver is *decisive* if removing it alone avoids the shortfall |
+| Aggregation | Census post-stratification with shrinkage for small cells |
+| Privacy | Laplace differential privacy (ε = 1), areas under 50 customers hidden, only area totals leave the "bank" |
 
 ## Results
 
-- The forecast map matches **real ONS claimant data at Spearman ρ = 0.84** across 344 neighbourhoods. The model never sees that data.
-- Backtest on a held-out future: area error is **1.6 pts vs 3.6** for the baselines, with household **AUC 0.98** and **Brier score 0.043**.
-- A £500k crisis fund targeted by Undertow protects **~860 households vs ~370** for most-deprived-first (2.3×).
-- Demo persona Aisha's lowest balance goes from **−£140 to +£70** with three suggested actions.
+### Validated against government public data
+
+We checked Undertow's forecast map against **the ONS Claimant Count (Sept 2026)**, official government statistics that the model **never sees**.
+
+| Check | Result |
+|---|---|
+| Rank agreement with ONS claimant rates (344 neighbourhoods) | **Spearman ρ = 0.84** |
+| Overlap with the real top-50 hardest-hit areas | **24 / 50** |
+
+Deprivation alone scores ρ = 0.92, which is expected since the model is built on it. What Undertow adds is *when*, *why*, *what-if* and *where to spend*.
+
+### Backtest on a held-out 6-week future
+
+| Metric | Undertow | Deprivation baseline | Last-period baseline |
+|---|---|---|---|
+| Area error (pts) | **1.6** | 3.6 | 3.6 |
+| Area ranking (ρ) | **0.95** | 0.89 | 0.89 |
+| Household AUC | **0.98** | n/a | n/a |
+| Brier score | **0.043** | n/a | n/a |
+
+### Policy shocks and crisis funding
+
+| Scenario | Households pushed into shortfall |
+|---|---|
+| Energy bills +10% | +4,400 |
+| Private rents +6% | +11,900 |
+| Hospitality hours −20% | +15,800 |
+| UC allowance +£20/month | −1,900 |
+
+| £500k crisis fund (£150 grants) | Households protected |
+|---|---|
+| **Undertow targeting** | **~860** |
+| Even split | ~500 |
+| Most-deprived-first | ~370 |
+
+On the customer side, demo persona Aisha's lowest balance goes from **−£140 to +£70** with three suggested actions.
 
 ## Tech stack
 
-**Headroom:** Next.js, TypeScript, Tailwind, Recharts, zod, Vitest, Claude, ElevenLabs, n8n, Twilio.
-
-**Undertow:** Python, NumPy, pandas, GeoPandas, Streamlit, pydeck, Plotly, pytest.
+| | |
+|---|---|
+| Headroom | Next.js, React, TypeScript, Tailwind, Recharts, zod, Vitest |
+| Undertow | Python, NumPy, pandas, GeoPandas, Streamlit, pydeck, Plotly, pytest |
+| AI & integrations | Claude, ElevenLabs, n8n, Twilio (WhatsApp) |
 
 ## Run it
 
@@ -39,7 +105,7 @@ cd headroom && npm install && npm run dev
 ```
 
 ```bash
-cd undertow && pip install -r <(echo pandas numpy pyarrow geopandas shapely streamlit pydeck plotly anthropic elevenlabs python-dotenv pydantic) && streamlit run app.py
+cd undertow && pip install pandas numpy pyarrow geopandas shapely streamlit pydeck plotly anthropic elevenlabs python-dotenv pydantic && streamlit run app.py
 ```
 
 API keys are optional. Without them, every AI feature falls back to templates.
